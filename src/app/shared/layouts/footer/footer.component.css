@@ -1,0 +1,35 @@
+/* Estilos adicionales para el componente de pie de página */
+
+/* Efecto hover para los iconos de redes sociales */
+footer svg {
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+footer a:hover svg {
+  transform: scale(1.1);
+}
+
+/* Animación para los enlaces */
+footer a {
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+footer a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 1px;
+  bottom: -2px;
+  left: 0;
+  background-color: var(--primary-600);
+  transition: width 0.3s ease;
+}
+
+.dark footer a::after {
+  background-color: var(--primary-400);
+}
+
+footer a:hover::after {
+  width: 100%;
+}

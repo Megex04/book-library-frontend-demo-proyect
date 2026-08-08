@@ -1,0 +1,21 @@
+/* Estilos específicos para el componente de informes */
+
+:host {
+  display: block;
+}
+
+/* Estilos para las tarjetas */
+.mat-mdc-card {
+  height: 100%;
+}
+
+/* Estilos para las pestañas */
+.mat-mdc-tab-group {
+  height: 100%;
+}
+
+/* Estilos para los gráficos */
+.chart-container {
+  height: 300px;
+  position: relative;
+}

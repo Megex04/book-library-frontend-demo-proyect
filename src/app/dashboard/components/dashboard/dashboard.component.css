@@ -1,0 +1,25 @@
+/* Estilos adicionales para el dashboard */
+
+/* Animación para las tarjetas de estadísticas */
+.dashboard-container .grid:first-child > div {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-container .grid:first-child > div:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Animación para los elementos de actividad reciente */
+.dashboard-container li {
+  transition: background-color 0.2s ease;
+}
+
+/* Animación para los libros recomendados */
+.dashboard-container .space-y-4 > div {
+  transition: transform 0.2s ease;
+}
+
+.dashboard-container .space-y-4 > div:hover {
+  transform: scale(1.02);
+}

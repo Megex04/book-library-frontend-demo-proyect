@@ -1,0 +1,62 @@
+<div class="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12 sm:px-6 lg:px-8">
+  <div class="w-full max-w-md space-y-8">
+    <div class="text-center">
+      <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Biblioteca Digital</h1>
+      <h2 class="mt-6 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Iniciar sesión</h2>
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+        ¿No tienes una cuenta?
+        <a routerLink="/auth/register" class="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300">
+          Regístrate aquí
+        </a>
+      </p>
+    </div>
+
+    <mat-card class="mt-8 bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div>
+          <mat-form-field class="w-full">
+            <mat-label>Correo electrónico</mat-label>
+            <input matInput formControlName="email" type="email" autocomplete="email" required>
+            <mat-icon matPrefix class="mr-2 text-gray-400">email</mat-icon>
+            <mat-error *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+              {{ getErrorMessage('email') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div>
+          <mat-form-field class="w-full">
+            <mat-label>Contraseña</mat-label>
+            <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'" autocomplete="current-password" required>
+            <mat-icon matPrefix class="mr-2 text-gray-400">lock</mat-icon>
+            <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-error *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+              {{ getErrorMessage('password') }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <mat-checkbox formControlName="rememberMe" color="primary" class="text-sm">
+            Recordarme
+          </mat-checkbox>
+          <div class="text-sm">
+            <a routerLink="/auth/forgot-password" class="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300">
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <button mat-raised-button color="primary" type="submit" class="w-full" [disabled]="isLoading">
+            <mat-icon *ngIf="isLoading" class="animate-spin mr-2">refresh</mat-icon>
+            <span *ngIf="isLoading">Iniciando sesión...</span>
+            <span *ngIf="!isLoading">Iniciar sesión</span>
+          </button>
+        </div>
+      </form>
+    </mat-card>
+  </div>
+</div>

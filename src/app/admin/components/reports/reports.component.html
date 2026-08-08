@@ -1,0 +1,156 @@
+<div class="container mx-auto p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Informes y Estadísticas</h1>
+    <div class="flex space-x-2">
+      <button mat-raised-button color="primary" (click)="exportToPDF()" class="flex items-center">
+        <mat-icon class="mr-1">picture_as_pdf</mat-icon>
+        PDF
+      </button>
+      <button mat-raised-button color="primary" (click)="exportToExcel()" class="flex items-center">
+        <mat-icon class="mr-1">table_chart</mat-icon>
+        Excel
+      </button>
+      <button mat-raised-button color="primary" (click)="printReport()" class="flex items-center">
+        <mat-icon class="mr-1">print</mat-icon>
+        Imprimir
+      </button>
+    </div>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <mat-form-field appearance="outline">
+        <mat-label>Tipo de informe</mat-label>
+        <mat-select [(ngModel)]="selectedReportType">
+          <mat-option value="circulation">Circulación</mat-option>
+          <mat-option value="collection">Colección</mat-option>
+          <mat-option value="users">Usuarios</mat-option>
+          <mat-option value="fines">Multas</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Período</mat-label>
+        <mat-select [(ngModel)]="selectedPeriod">
+          <mat-option value="day">Diario</mat-option>
+          <mat-option value="week">Semanal</mat-option>
+          <mat-option value="month">Mensual</mat-option>
+          <mat-option value="year">Anual</mat-option>
+          <mat-option value="custom">Personalizado</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha inicio</mat-label>
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate">
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha fin</mat-label>
+        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate">
+        <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <div class="flex justify-center mb-6">
+      <button mat-raised-button color="primary" (click)="generateReport()" class="flex items-center">
+        <mat-icon class="mr-2">assessment</mat-icon>
+        Generar Informe
+      </button>
+    </div>
+
+    <mat-tab-group>
+      <mat-tab label="Resumen">
+        <div class="p-4">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+            Resumen de {{ selectedReportType === 'circulation' ? 'Circulación' : 
+                          selectedReportType === 'collection' ? 'Colección' : 
+                          selectedReportType === 'users' ? 'Usuarios' : 'Multas' }}
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <mat-card *ngFor="let item of getReportData()" class="p-4">
+              <mat-card-content>
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ item.label }}</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                      {{ selectedReportType === 'fines' && item.label === 'Ingresos por multas' ? formatCurrency(item.value) : item.value }}
+                    </p>
+                  </div>
+                  <div [ngClass]="item.color" class="w-12 h-12 rounded-full flex items-center justify-center text-white">
+                    <mat-icon>
+                      {{ selectedReportType === 'circulation' ? 'book' : 
+                         selectedReportType === 'collection' ? 'category' : 
+                         selectedReportType === 'users' ? 'people' : 'payments' }}
+                    </mat-icon>
+                  </div>
+                </div>
+                <div class="mt-4">
+                  <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                    <div [ngClass]="item.color" class="h-2.5 rounded-full" [style.width.%]="getPercentage(item.value)"></div>
+                  </div>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ getPercentage(item.value) }}% del total</p>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+
+          <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Tendencia mensual</h3>
+            <div class="h-64 bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <!-- Aquí iría un componente de gráfico (Chart.js, ngx-charts, etc.) -->
+              <p class="text-center text-gray-500 dark:text-gray-400 mt-20">
+                Gráfico de tendencia mensual (implementar con librería de gráficos)
+              </p>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Detalles">
+        <div class="p-4">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Detalles del informe</h2>
+          <p class="text-gray-500 dark:text-gray-400 mb-4">
+            Aquí se mostrarían los datos detallados del informe seleccionado.
+          </p>
+          <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+            <p class="text-center text-gray-500 dark:text-gray-400 py-20">
+              Tabla de datos detallados (implementar según el tipo de informe seleccionado)
+            </p>
+          </div>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Comparativas">
+        <div class="p-4">
+          <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Análisis comparativo</h2>
+          <p class="text-gray-500 dark:text-gray-400 mb-4">
+            Comparativa con períodos anteriores.
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+              <h3 class="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Comparativa con período anterior</h3>
+              <div class="h-64 bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="text-center text-gray-500 dark:text-gray-400 mt-20">
+                  Gráfico comparativo (implementar con librería de gráficos)
+                </p>
+              </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+              <h3 class="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Evolución anual</h3>
+              <div class="h-64 bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="text-center text-gray-500 dark:text-gray-400 mt-20">
+                  Gráfico de evolución (implementar con librería de gráficos)
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

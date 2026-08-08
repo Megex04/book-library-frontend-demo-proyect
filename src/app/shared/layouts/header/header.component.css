@@ -1,0 +1,29 @@
+/* Estilos adicionales para el componente de encabezado */
+
+/* Animación para el menú desplegable */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Aplicar animación al menú desplegable */
+.absolute {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Estilo para el logo cuando se hace hover */
+a.flex:hover svg {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+/* Estilo para los enlaces activos */
+a.active {
+  color: var(--primary-600);
+  font-weight: 600;
+}
+
+/* Estilo para el modo oscuro */
+.dark a.active {
+  color: var(--primary-400);
+}

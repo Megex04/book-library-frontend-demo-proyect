@@ -1,0 +1,148 @@
+:host ::ng-deep {
+  // Contenedor principal del formulario
+  .register-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  // Fila del formulario para campos en línea
+  .form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 0; // El margin-bottom se controla en el mat-form-field
+    .mat-mdc-form-field {
+      flex: 1;
+    }
+  }
+
+  // Estilos para TODOS los mat-form-field
+  .mat-mdc-form-field {
+    width: 100%;
+    margin-bottom: 20px; // Espaciado inferior
+    height: 65px; // Altura fija para alinear
+
+    // Contenedor interno del campo de texto
+    .mat-mdc-text-field-wrapper {
+      height: 100%;
+      .mat-mdc-form-field-flex {
+        height: 100%;
+        align-items: center; // Centra el contenido verticalmente
+      }
+    }
+
+    // --- 1. CENTRADO VERTICAL DEL LABEL INACTIVO ---
+    .mdc-floating-label:not(.mdc-floating-label--float-above) {
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      color: #64b5f6 !important; // Color azul claro
+    }
+
+    // Label flotante (activo o con valor)
+    .mdc-floating-label--float-above {
+      color: #64b5f6 !important; // Mantener color azul claro
+      background-color: white !important; // Fondo blanco para que no se solape
+      padding: 0 4px !important; // Pequeño padding para que "corte" el borde
+      margin-left: -4px; // Ajuste para alinear con el padding
+    }
+
+    // Padding para el input y el placeholder
+    .mat-mdc-input-element {
+      padding-left: 8px !important;
+    }
+
+    // --- 2. ELIMINACIÓN DE LÍNEAS VERTICALES ---
+    // Eliminar la línea del notch (la del medio)
+    .mdc-notched-outline__notch {
+      border-right: none !important;
+    }
+    // Eliminar la línea inferior (ripple)
+    .mdc-line-ripple {
+      display: none !important;
+    }
+
+    // --- 3. BORDE SIN CAMBIO AL ENFOCAR ---
+    // Forzar borde gris en todos los estados
+    .mdc-notched-outline {
+      border-color: #e0e0e0 !important;
+      border-radius: 8px !important;
+      border-width: 1px !important;
+    }
+
+    // Eliminar borde azul en estado focused
+    &.mat-focused .mdc-notched-outline {
+      border-color: #e0e0e0 !important;
+      border-width: 1px !important;
+    }
+
+    // Eliminar borde azul en estado mdc-text-field--focused
+    &.mdc-text-field--focused .mdc-notched-outline {
+      border-color: #e0e0e0 !important;
+      border-width: 1px !important;
+    }
+
+    // Eliminar cualquier outline azul adicional
+    .mdc-notched-outline--notched {
+      border-color: #e0e0e0 !important;
+    }
+  }
+
+  // Mensajes de error en rojo
+  .mat-mdc-form-field-error {
+    color: #f44336 !important;
+    font-size: 12px;
+  }
+
+  // Checkbox personalizado
+  .mat-mdc-checkbox {
+    .mdc-checkbox__native-control:checked ~ .mdc-checkbox__background {
+      background-color: #64b5f6 !important;
+      border-color: #64b5f6 !important;
+    }
+    .mdc-checkbox__checkmark {
+      color: white !important;
+    }
+  }
+
+  // Botón de registro
+  .mat-mdc-raised-button.mat-primary {
+    background-color: #64b5f6 !important;
+    color: white !important;
+  }
+
+  // Estilos para los botones de mostrar/ocultar contraseña
+  .mat-mdc-form-field .mat-mdc-icon-button {
+    width: 40px !important;
+    height: 40px !important;
+    color: #666 !important;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04) !important;
+      color: #333 !important;
+    }
+    
+    .mat-icon {
+      font-size: 20px !important;
+      width: 20px !important;
+      height: 20px !important;
+      line-height: 20px !important;
+    }
+  }
+
+  // Asegurar que los iconos de Material Icons se carguen correctamente
+  .material-icons {
+    font-family: 'Material Icons' !important;
+    font-weight: normal !important;
+    font-style: normal !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    display: inline-block !important;
+    white-space: nowrap !important;
+    word-wrap: normal !important;
+    direction: ltr !important;
+    -webkit-font-feature-settings: 'liga' !important;
+    -webkit-font-smoothing: antialiased !important;
+  }
+}

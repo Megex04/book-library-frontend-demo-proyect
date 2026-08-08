@@ -1,0 +1,100 @@
+<div class="flex min-h-screen">
+  <div class="flex-1 flex items-center justify-center p-6">
+    <div class="w-full max-w-md">
+      <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Verificación de correo electrónico</h1>
+      </div>
+
+      <!-- Estado de carga durante la verificación -->
+      <div *ngIf="isVerifying" class="text-center">
+        <div class="flex justify-center mb-4">
+          <mat-icon class="text-blue-500 text-5xl animate-spin">refresh</mat-icon>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Verificando tu correo electrónico</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+          Por favor espera mientras verificamos tu correo electrónico...
+        </p>
+      </div>
+
+      <!-- Verificación exitosa -->
+      <div *ngIf="!isVerifying && isVerified" class="text-center">
+        <div class="flex justify-center mb-4">
+          <mat-icon class="text-green-500 text-5xl">check_circle</mat-icon>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">¡Correo verificado!</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+          Tu dirección de correo electrónico ha sido verificada exitosamente. Ahora puedes acceder a todas las funciones de la biblioteca.
+        </p>
+        <button mat-raised-button color="primary" (click)="goToLogin()" class="w-full">
+          Ir a iniciar sesión
+        </button>
+      </div>
+
+      <!-- Error en la verificación -->
+      <div *ngIf="!isVerifying && hasError" class="text-center">
+        <div class="flex justify-center mb-4">
+          <mat-icon class="text-red-500 text-5xl">error</mat-icon>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Error de verificación</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+          {{ errorMessage || 'No pudimos verificar tu correo electrónico. El enlace puede haber expirado o ser inválido.' }}
+        </p>
+        <button mat-raised-button color="primary" (click)="resendVerificationEmail()" class="w-full mb-4">
+          Reenviar correo de verificación
+        </button>
+        <button mat-stroked-button (click)="goToLogin()" class="w-full">
+          Volver al inicio de sesión
+        </button>
+      </div>
+
+      <!-- Instrucciones (cuando no hay token) -->
+      <div *ngIf="!isVerifying && !isVerified && !hasError && !token" class="text-center">
+        <div class="flex justify-center mb-4">
+          <mat-icon class="text-blue-500 text-5xl">mail</mat-icon>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Verifica tu correo electrónico</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+          Hemos enviado un correo electrónico con un enlace de verificación a tu dirección de correo. Por favor, revisa tu bandeja de entrada y haz clic en el enlace para verificar tu cuenta.
+        </p>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">
+          Si no recibes el correo en unos minutos, revisa tu carpeta de spam o solicita un nuevo correo de verificación.
+        </p>
+        <button mat-raised-button color="primary" (click)="resendVerificationEmail()" class="w-full mb-4">
+          Reenviar correo de verificación
+        </button>
+        <button mat-stroked-button (click)="goToLogin()" class="w-full">
+          Volver al inicio de sesión
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hidden lg:block lg:w-1/2 bg-blue-600">
+    <div class="flex items-center justify-center h-full p-12">
+      <div class="max-w-xl">
+        <div class="text-white">
+          <h2 class="text-3xl font-bold mb-4">¡Gracias por unirte a nuestra biblioteca!</h2>
+          <p class="text-xl mb-6">Al verificar tu correo electrónico, podrás:</p>
+          <ul class="space-y-4">
+            <li class="flex items-center">
+              <mat-icon class="mr-2">check_circle</mat-icon>
+              <span>Reservar y prestar libros</span>
+            </li>
+            <li class="flex items-center">
+              <mat-icon class="mr-2">check_circle</mat-icon>
+              <span>Acceder a recursos digitales exclusivos</span>
+            </li>
+            <li class="flex items-center">
+              <mat-icon class="mr-2">check_circle</mat-icon>
+              <span>Recibir notificaciones sobre eventos</span>
+            </li>
+            <li class="flex items-center">
+              <mat-icon class="mr-2">check_circle</mat-icon>
+              <span>Participar en la comunidad de lectores</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

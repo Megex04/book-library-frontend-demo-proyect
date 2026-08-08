@@ -1,0 +1,24 @@
+/* Estilos específicos para el componente de gestión de usuarios */
+
+:host {
+  display: block;
+}
+
+/* Estilos para la tabla */
+.mat-mdc-table {
+  width: 100%;
+}
+
+.mat-mdc-row:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.dark .mat-mdc-row:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Estilos para los chips de estado y rol */
+.mat-mdc-chip {
+  min-height: 24px;
+  font-size: 12px;
+}

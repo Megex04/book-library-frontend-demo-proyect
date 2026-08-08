@@ -1,0 +1,22 @@
+/* Estilos adicionales para el componente de diseño principal */
+
+/* Transición suave para cambios de tema */
+.flex-col {
+  transition: background-color 0.3s ease;
+}
+
+/* Estilo para el contenedor principal */
+main {
+  padding-top: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+/* Animación de entrada para el contenido principal */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+main > :first-child {
+  animation: fadeInUp 0.4s ease-out;
+}

@@ -1,0 +1,180 @@
+<div class="dashboard-container">
+  <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Dashboard</h1>
+
+  <!-- Estadísticas del usuario -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-card p-4 flex items-center">
+      <div class="rounded-full bg-primary-100 dark:bg-primary-900 p-3 mr-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Préstamos activos</p>
+        <p class="text-xl font-semibold text-gray-900 dark:text-white">{{ userStats.activeLoans }}</p>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-card p-4 flex items-center">
+      <div class="rounded-full bg-secondary-100 dark:bg-secondary-900 p-3 mr-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-secondary-600 dark:text-secondary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Reservas pendientes</p>
+        <p class="text-xl font-semibold text-gray-900 dark:text-white">{{ userStats.reservations }}</p>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-card p-4 flex items-center">
+      <div class="rounded-full bg-warning-100 dark:bg-warning-900 p-3 mr-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-warning-600 dark:text-warning-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Multas pendientes</p>
+        <p class="text-xl font-semibold text-gray-900 dark:text-white">{{ userStats.pendingFines }}</p>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-card p-4 flex items-center">
+      <div class="rounded-full bg-success-100 dark:bg-success-900 p-3 mr-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-success-600 dark:text-success-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Libros leídos</p>
+        <p class="text-xl font-semibold text-gray-900 dark:text-white">{{ userStats.booksRead }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Actividad reciente -->
+    <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow-card p-6">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Actividad reciente</h2>
+      
+      <div *ngIf="!isLoading && recentActivity.length === 0" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">
+        Todavía no tienes actividad registrada.
+      </div>
+
+      <div class="overflow-hidden">
+        <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+          <li *ngFor="let activity of recentActivity" class="py-4">
+            <div class="flex items-center">
+              <!-- Icono según tipo de actividad -->
+              <div class="flex-shrink-0 mr-4">
+                <div *ngIf="activity.type === 'loan'" class="rounded-full bg-primary-100 dark:bg-primary-900 p-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <div *ngIf="activity.type === 'return'" class="rounded-full bg-success-100 dark:bg-success-900 p-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-success-600 dark:text-success-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div *ngIf="activity.type === 'reservation'" class="rounded-full bg-secondary-100 dark:bg-secondary-900 p-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-secondary-600 dark:text-secondary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div *ngIf="activity.type === 'fine'" class="rounded-full bg-warning-100 dark:bg-warning-900 p-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning-600 dark:text-warning-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              
+              <!-- Información de la actividad -->
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {{ activity.title }}
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  <span *ngIf="activity.type === 'loan'">Préstamo</span>
+                  <span *ngIf="activity.type === 'return'">Devolución</span>
+                  <span *ngIf="activity.type === 'reservation'">Reserva</span>
+                  <span *ngIf="activity.type === 'fine'">Multa: ${{ activity.amount }}</span>
+                  <span class="mx-1">•</span>
+                  <span>{{ activity.date | date:'dd/MM/yyyy' }}</span>
+                </p>
+              </div>
+              
+              <!-- Estado de la actividad -->
+              <div>
+                <span *ngIf="activity.status === 'active'" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300">
+                  Activo
+                </span>
+                <span *ngIf="activity.status === 'completed'" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300">
+                  Completado
+                </span>
+                <span *ngIf="activity.status === 'pending'" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-secondary-800 dark:bg-secondary-900 dark:text-secondary-300">
+                  Pendiente
+                </span>
+                <span *ngIf="activity.status === 'unpaid'" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-300">
+                  Sin pagar
+                </span>
+                <span *ngIf="activity.status === 'paid'" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300">
+                  Pagada
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="mt-4 text-center">
+        <a routerLink="/profile/activity" class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
+          Ver toda la actividad
+        </a>
+      </div>
+    </div>
+
+    <!-- Libros recomendados -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-card p-6">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recomendados para ti</h2>
+      
+      <div *ngIf="!isLoading && recommendedBooks.length === 0" class="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">
+        No hay libros disponibles en el catálogo todavía.
+      </div>
+
+      <div class="space-y-4">
+        <div *ngFor="let book of recommendedBooks" class="flex items-start space-x-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
+          <!-- Portada del libro -->
+          <div class="flex-shrink-0 w-16 h-24 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+            <img [src]="book.coverImageUrl || 'assets/covers/default.jpg'" alt="Portada de {{ book.title }}" class="w-full h-full object-cover"
+                 onerror="this.src='assets/covers/default.jpg'; this.onerror=null;">
+          </div>
+
+          <!-- Información del libro -->
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ book.title }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ book.authorNames }}</p>
+
+            <span class="inline-flex items-center mt-2 px-2 py-0.5 rounded-full text-xs font-medium"
+                  [ngClass]="book.available ? 'bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'">
+              {{ book.available ? 'Disponible' : 'No disponible' }}
+            </span>
+          </div>
+
+          <!-- Botón de acción -->
+          <a [routerLink]="['/catalog', book.id]" class="flex-shrink-0 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </a>
+        </div>
+      </div>
+      
+      <div class="mt-4 text-center">
+        <a routerLink="/catalog" class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
+          Explorar catálogo completo
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
