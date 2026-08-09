@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap, catchError, throwError } from 'rxjs';
+import { Observable, BehaviorSubject, tap, catchError, throwError, filter, take, of } from 'rxjs';
 import { User } from '../models/user.model';
 import { environment } from '../../../environments/environment';
 import { JwtHelperService } from '@auth0/angular-jwt';
@@ -34,8 +34,43 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
   private jwtHelper = new JwtHelperService();
 
+  // Indica si ya se resolvió (con éxito o con error) el intento de cargar el
+  // perfil del usuario a partir del token guardado. Arranca en `true` cuando
+  // no hay token válido (no hay nada que esperar), y en `false` cuando sí lo
+  // hay, hasta que fetchAndSetCurrentUser() complete.
+  //
+  // Por qué existe: roleGuard (y cualquier código que llame a hasRole())
+  // dependía de currentUserSubject, que se llena de forma asíncrona
+  // (setTimeout(0) + petición HTTP a /users/profile). Si el usuario navegaba
+  // directo a una ruta protegida por rol (recargar la página, pegar una URL,
+  // o incluso navegar muy rápido tras el login) antes de que esa petición
+  // completara, hasRole() devolvía false para todos los roles y el guard
+  // rechazaba el acceso a un usuario que sí tenía el rol correcto -> por eso
+  // un LIBRARIAN válido era expulsado de /admin/loans, /admin/reservations,
+  // etc., y el dashboard mostraba N/D (isAdmin se evaluaba como false antes
+  // de tiempo).
+  private profileResolvedSubject = new BehaviorSubject<boolean>(false);
+
   constructor(private http: HttpClient) {
     this.loadUserFromStorage();
+  }
+
+  /**
+   * Emite `true` una sola vez, cuando el intento de cargar el perfil del
+   * usuario ya terminó (haya tenido éxito o no). Cualquier código que
+   * necesite conocer el rol real del usuario antes de decidir algo (guards,
+   * componentes que llaman a hasRole()) debe esperar a este observable en
+   * vez de leer currentUser directamente, para no pisar una carrera con la
+   * petición a /users/profile todavía en curso.
+   */
+  whenProfileResolved(): Observable<boolean> {
+    if (this.profileResolvedSubject.value) {
+      return of(true);
+    }
+    return this.profileResolvedSubject.pipe(
+      filter(resolved => resolved),
+      take(1)
+    );
   }
 
   // El JWT que emite el backend (JwtTokenProvider.createToken) solo incluye
@@ -60,13 +95,24 @@ export class AuthService {
     const token = localStorage.getItem('access_token');
     if (token && !this.jwtHelper.isTokenExpired(token)) {
       setTimeout(() => this.fetchAndSetCurrentUser(), 0);
+    } else {
+      // No hay token válido: no hay perfil que esperar, así que se marca
+      // como "resuelto" de inmediato para no dejar a whenProfileResolved()
+      // esperando algo que nunca va a llegar.
+      this.profileResolvedSubject.next(true);
     }
   }
 
   private fetchAndSetCurrentUser(): void {
     this.http.get<any>(`${environment.apiUrl}/users/profile`).subscribe({
-      next: (profile) => this.currentUserSubject.next(this.normalizeUser(profile)),
-      error: () => this.currentUserSubject.next(null)
+      next: (profile) => {
+        this.currentUserSubject.next(this.normalizeUser(profile));
+        this.profileResolvedSubject.next(true);
+      },
+      error: () => {
+        this.currentUserSubject.next(null);
+        this.profileResolvedSubject.next(true);
+      }
     });
   }
 
@@ -86,6 +132,11 @@ export class AuthService {
         tap(response => {
           localStorage.setItem('access_token', response.accessToken);
           localStorage.setItem('refresh_token', response.refreshToken);
+          // Se resetea a "no resuelto" antes de disparar la carga del perfil
+          // del nuevo usuario, por si whenProfileResolved() ya había quedado
+          // en true de una sesión anterior (o de arrancar sin sesión) en la
+          // misma pestaña.
+          this.profileResolvedSubject.next(false);
           this.fetchAndSetCurrentUser();
         })
       );

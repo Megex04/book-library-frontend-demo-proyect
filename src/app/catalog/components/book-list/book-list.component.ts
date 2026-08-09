@@ -119,10 +119,18 @@ import { ReservationService } from '../../../core/services/reservation.service';
             <button mat-raised-button color="primary" [routerLink]="['/catalog', book.id]">
               Ver detalles
             </button>
+            <!-- Reservar no requiere que haya copias disponibles: el backend
+                 (ReservationService.createReservation) acepta reservas sin
+                 stock y las deja en estado PENDING hasta que se libere una
+                 copia; solo si ya hay disponibilidad, procesa la reserva de
+                 inmediato (READY). Deshabilitar el botón cuando
+                 !book.available bloqueaba justamente el caso de uso real de
+                 "reservar en cola". Solo se bloquea mientras la petición
+                 está en curso, para evitar doble clic. -->
             <button mat-button color="accent"
-                    [disabled]="!book.available"
+                    [disabled]="reservingBookIds.has(book.id)"
                     (click)="reserveBook(book.id)">
-              Reservar
+              {{ book.available ? 'Reservar' : 'Reservar (en cola)' }}
             </button>
           </mat-card-actions>
         </mat-card>
@@ -164,6 +172,9 @@ export class BookListComponent implements OnInit {
   books: any[] = [];
   categories: any[] = [];
   isLoading = true;
+  // IDs de libros con una reserva en curso, para deshabilitar solo ese botón
+  // (evitar doble clic) sin bloquear el resto de la lista.
+  reservingBookIds = new Set<number>();
 
   // Filtros
   searchQuery: string = '';
@@ -274,12 +285,22 @@ export class BookListComponent implements OnInit {
   }
 
   reserveBook(bookId: number): void {
+    if (this.reservingBookIds.has(bookId)) {
+      return;
+    }
+
+    this.reservingBookIds.add(bookId);
     this.reservationService.createReservation({ bookId }).subscribe({
-      next: () => {
-        this.snackBar.open('Libro reservado correctamente', 'Cerrar', { duration: 3000 });
+      next: (reservation) => {
+        this.reservingBookIds.delete(bookId);
+        const message = reservation?.status === 'PENDING'
+          ? 'Reserva registrada: quedaste en la lista de espera hasta que haya una copia disponible'
+          : 'Libro reservado correctamente, ya está listo para retirar';
+        this.snackBar.open(message, 'Cerrar', { duration: 4000 });
         this.loadBooks();
       },
       error: (err) => {
+        this.reservingBookIds.delete(bookId);
         const message = err?.error?.message || 'No se pudo reservar el libro';
         this.snackBar.open(message, 'Cerrar', { duration: 3000 });
       }

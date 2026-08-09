@@ -17,7 +17,7 @@ export class FineService {
 
   constructor(private http: HttpClient) {}
 
-  getAllFines(page = 0, size = 10, sort = 'createdDate,desc'): Observable<any> {
+  getAllFines(page = 0, size = 10, sort = 'createdAt,desc'): Observable<any> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())

@@ -91,13 +91,19 @@
         <!-- Row shown when there is no matching data. -->
         <tr class="mat-row" *matNoDataRow>
           <td class="mat-cell py-4 text-center text-gray-500 dark:text-gray-400" [attr.colspan]="displayedColumns.length">
-            No se encontraron libros que coincidan con "{{searchTerm}}"
+            {{ isLoading ? 'Cargando libros...' : ('No se encontraron libros que coincidan con "' + searchTerm + '"') }}
           </td>
         </tr>
       </table>
     </div>
 
-    <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Seleccionar página de libros">
+    <mat-paginator
+      [length]="totalElements"
+      [pageIndex]="pageIndex"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[5, 10, 25, 100]"
+      (page)="onPageChange($event)"
+      aria-label="Seleccionar página de libros">
     </mat-paginator>
   </div>
 </div>

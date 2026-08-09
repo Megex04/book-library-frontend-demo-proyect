@@ -38,9 +38,12 @@ export const routes: Routes = [
         loadChildren: () => import("./fines/fines.routes").then(m => m.FINES_ROUTES),
       },
       {
+        // Solo se exige sesión iniciada a nivel de sección. El control fino
+        // por rol (qué subsecciones puede ver ADMIN vs LIBRARIAN) vive en
+        // admin.routes.ts, reflejando los @PreAuthorize de cada controller
+        // del backend (algunas subsecciones son ADMIN+LIBRARIAN, otras solo ADMIN).
         path: 'admin',
-        canActivate: [authGuard, roleGuard],
-        data: { roles: ['ADMIN'] },
+        canActivate: [authGuard],
         loadChildren: () => import("./admin/admin.routes").then(m => m.ADMIN_ROUTES),
       },
       {

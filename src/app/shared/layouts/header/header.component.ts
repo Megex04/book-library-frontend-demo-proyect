@@ -39,6 +39,15 @@ export class HeaderComponent implements OnInit {
     this.userRole = user?.roles?.[0]?.name?.replace('ROLE_', '') || '';
   }
 
+  // Usa authService.hasRole() (revisa TODOS los roles del usuario) en vez de
+  // comparar contra userRole (que solo mira roles[0]). Un usuario puede tener
+  // varios roles y ADMIN/LIBRARIAN no necesariamente queda primero en el array
+  // que devuelve el backend, así que basarse solo en userRole podía ocultar el
+  // link de Administración a un LIBRARIAN legítimo.
+  get isStaff(): boolean {
+    return this.authService.hasRole('ADMIN') || this.authService.hasRole('LIBRARIAN');
+  }
+
   toggleMenu(): void {
     this.isMenuOpen = !this.isMenuOpen;
   }

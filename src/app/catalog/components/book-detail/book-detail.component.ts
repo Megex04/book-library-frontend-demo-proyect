@@ -46,16 +46,22 @@ import { ReservationService } from '../../../core/services/reservation.service';
                    class="max-w-full max-h-80 mx-auto object-contain"
                    onerror="this.src='assets/images/book-placeholder.jpg'; this.onerror=null;">
 
+              <!-- Reservar no requiere copias disponibles: el backend
+                   (ReservationService.createReservation) acepta la reserva
+                   igual y la deja en PENDING (lista de espera) hasta que se
+                   libere una copia; si hay stock, la procesa de inmediato
+                   (READY). Antes el botón se deshabilitaba justo en el caso
+                   de uso real de "reservar en cola". -->
               <div class="mt-4">
                 <button mat-raised-button color="primary"
-                        [disabled]="!book.available || isReserving"
+                        [disabled]="isReserving"
                         (click)="reserveBook()">
-                  <mat-icon>bookmark</mat-icon> Reservar
+                  <mat-icon>bookmark</mat-icon> {{ book.available ? 'Reservar' : 'Reservar (en cola)' }}
                 </button>
               </div>
 
-              <div *ngIf="!book.available" class="mt-4 text-red-600">
-                <mat-icon>info</mat-icon> Este libro no está disponible actualmente
+              <div *ngIf="!book.available" class="mt-4 text-amber-600">
+                <mat-icon>info</mat-icon> Sin copias disponibles ahora mismo: la reserva quedará en lista de espera.
               </div>
             </mat-card-content>
           </mat-card>
@@ -212,9 +218,12 @@ export class BookDetailComponent implements OnInit {
 
     this.isReserving = true;
     this.reservationService.createReservation({ bookId: this.bookId }).subscribe({
-      next: () => {
+      next: (reservation) => {
         this.isReserving = false;
-        this.snackBar.open('Libro reservado correctamente', 'Cerrar', { duration: 3000 });
+        const message = reservation?.status === 'PENDING'
+          ? 'Reserva registrada: quedaste en la lista de espera hasta que haya una copia disponible'
+          : 'Libro reservado correctamente, ya está listo para retirar';
+        this.snackBar.open(message, 'Cerrar', { duration: 4000 });
         this.loadBook();
       },
       error: (err) => {

@@ -1,27 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatChipsModule } from '@angular/material/chips';
-
-interface Book {
-  id: number;
-  title: string;
-  author: string;
-  isbn: string;
-  category: string;
-  status: string;
-  publishedYear: number;
-  copies: number;
-  availableCopies: number;
-}
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { BookService } from '../../../core/services/book.service';
+import { BookEditDialogComponent } from './book-edit-dialog/book-edit-dialog.component';
 
 @Component({
   selector: 'app-book-management',
@@ -44,113 +35,131 @@ interface Book {
   styleUrls: ['./book-management.component.scss']
 })
 export class BookManagementComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'title', 'author', 'category', 'status', 'copies', 'actions'];
-  dataSource: Book[] = [];
-  searchTerm: string = '';
-  filteredData: Book[] = [];
+  @ViewChild(MatPaginator) paginator?: MatPaginator;
 
-  constructor() { }
+  displayedColumns: string[] = ['id', 'title', 'author', 'category', 'status', 'copies', 'actions'];
+  dataSource: any[] = [];
+  searchTerm: string = '';
+  isLoading = true;
+  pageIndex = 0;
+  pageSize = 10;
+  totalElements = 0;
+
+  constructor(
+    private bookService: BookService,
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
-    // Simular datos de libros (reemplazar con llamada a API real)
-    this.dataSource = [
-      {
-        id: 1,
-        title: 'Cien años de soledad',
-        author: 'Gabriel García Márquez',
-        isbn: '978-0307474728',
-        category: 'Ficción',
-        status: 'Disponible',
-        publishedYear: 1967,
-        copies: 5,
-        availableCopies: 3
+    this.loadBooks();
+  }
+
+  loadBooks(): void {
+    this.isLoading = true;
+    this.bookService.getAllBooks(this.pageIndex, this.pageSize).subscribe({
+      next: (response) => {
+        this.dataSource = (response?.content ?? []).map((b: any) => this.normalizeBook(b));
+        this.totalElements = response?.totalElements ?? this.dataSource.length;
+        this.isLoading = false;
       },
-      {
-        id: 2,
-        title: 'El principito',
-        author: 'Antoine de Saint-Exupéry',
-        isbn: '978-0156012195',
-        category: 'Infantil',
-        status: 'Disponible',
-        publishedYear: 1943,
-        copies: 8,
-        availableCopies: 5
-      },
-      {
-        id: 3,
-        title: '1984',
-        author: 'George Orwell',
-        isbn: '978-0451524935',
-        category: 'Ciencia Ficción',
-        status: 'Agotado',
-        publishedYear: 1949,
-        copies: 3,
-        availableCopies: 0
-      },
-      {
-        id: 4,
-        title: 'Don Quijote de la Mancha',
-        author: 'Miguel de Cervantes',
-        isbn: '978-8420412146',
-        category: 'Clásico',
-        status: 'Disponible',
-        publishedYear: 1605,
-        copies: 4,
-        availableCopies: 2
-      },
-      {
-        id: 5,
-        title: 'Harry Potter y la piedra filosofal',
-        author: 'J.K. Rowling',
-        isbn: '978-0590353427',
-        category: 'Fantasía',
-        status: 'Disponible',
-        publishedYear: 1997,
-        copies: 10,
-        availableCopies: 7
+      error: () => {
+        this.dataSource = [];
+        this.isLoading = false;
+        this.snackBar.open('No se pudieron cargar los libros', 'Cerrar', { duration: 3000 });
       }
-    ];
-    this.filteredData = [...this.dataSource];
+    });
+  }
+
+  // BookDTO trae authors/categories como Set<{id,name}> y availableCopies/
+  // totalCopies en vez de los nombres planos que usa la plantilla; se
+  // aplanan aquí conservando el objeto original para las acciones.
+  private normalizeBook(book: any): any {
+    const authorNames = Array.isArray(book.authors) ? book.authors.map((a: any) => a.name).join(', ') : '';
+    const categoryNames = Array.isArray(book.categories) ? book.categories.map((c: any) => c.name).join(', ') : '';
+    return {
+      ...book,
+      author: authorNames || 'Sin autor asignado',
+      category: categoryNames || 'Sin categoría',
+      copies: book.totalCopies,
+      availableCopies: book.availableCopies,
+      status: book.availableCopies > 0 ? 'Disponible' : 'Agotado'
+    };
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadBooks();
+  }
+
+  get filteredData(): any[] {
+    const term = this.searchTerm.toLowerCase().trim();
+    if (!term) {
+      return this.dataSource;
+    }
+    return this.dataSource.filter(book =>
+      (book.title ?? '').toLowerCase().includes(term) ||
+      (book.author ?? '').toLowerCase().includes(term) ||
+      (book.category ?? '').toLowerCase().includes(term) ||
+      (book.status ?? '').toLowerCase().includes(term) ||
+      (book.isbn ?? '').toLowerCase().includes(term)
+    );
   }
 
   applyFilter(): void {
-    const searchTermLower = this.searchTerm.toLowerCase().trim();
-    this.filteredData = this.dataSource.filter(book => 
-      book.title.toLowerCase().includes(searchTermLower) ||
-      book.author.toLowerCase().includes(searchTermLower) ||
-      book.category.toLowerCase().includes(searchTermLower) ||
-      book.status.toLowerCase().includes(searchTermLower) ||
-      book.isbn.toLowerCase().includes(searchTermLower)
-    );
+    // Filtro en cliente sobre la página cargada.
   }
 
   clearSearch(): void {
     this.searchTerm = '';
-    this.filteredData = [...this.dataSource];
   }
 
   addBook(): void {
-    // Implementar lógica para abrir diálogo de creación de libro
-    console.log('Agregar libro');
+    // No hay todavía un diálogo de creación; se deja explícito en vez de
+    // simular una creación que no ocurre de verdad.
+    this.snackBar.open('El formulario de alta de libros se implementará próximamente', 'Cerrar', { duration: 3000 });
   }
 
-  editBook(book: Book): void {
-    // Implementar lógica para abrir diálogo de edición de libro
-    console.log('Editar libro', book);
+  editBook(book: any): void {
+    const dialogRef = this.dialog.open(BookEditDialogComponent, {
+      width: '600px',
+      maxHeight: '90vh',
+      data: { book }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.snackBar.open('Libro actualizado correctamente', 'Cerrar', { duration: 3000 });
+        this.loadBooks();
+      }
+    });
   }
 
-  deleteBook(book: Book): void {
-    // Implementar lógica para confirmar y eliminar libro
-    console.log('Eliminar libro', book);
+  deleteBook(book: any): void {
+    const confirmed = window.confirm(`¿Eliminar el libro "${book.title}"? Esta acción no se puede deshacer.`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.bookService.deleteBook(book.id).subscribe({
+      next: () => {
+        this.snackBar.open('Libro eliminado correctamente', 'Cerrar', { duration: 3000 });
+        this.loadBooks();
+      },
+      error: (err) => {
+        const message = err?.error?.message || 'No se pudo eliminar el libro (puede tener préstamos o reservas activas)';
+        this.snackBar.open(message, 'Cerrar', { duration: 3000 });
+      }
+    });
   }
 
-  viewBookDetails(book: Book): void {
-    // Implementar lógica para ver detalles del libro
-    console.log('Ver detalles del libro', book);
+  viewBookDetails(book: any): void {
+    this.snackBar.open(`${book.title} · ${book.author} · Ejemplares: ${book.availableCopies}/${book.copies} · Préstamos: ${book.loanCount ?? 0}`, 'Cerrar', { duration: 5000 });
   }
 
   getStatusClass(status: string): string {
-    return status === 'Disponible' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 
+    return status === 'Disponible' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
   }
 }

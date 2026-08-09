@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,16 +10,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatChipsModule } from '@angular/material/chips';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  status: string;
-  lastLogin: string;
-  createdAt: string;
-}
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { UserService } from '../../../core/services/user.service';
 
 @Component({
   selector: 'app-user-management',
@@ -42,110 +34,141 @@ interface User {
   styleUrls: ['./user-management.component.scss']
 })
 export class UserManagementComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'name', 'email', 'role', 'status', 'lastLogin', 'actions'];
-  dataSource: User[] = [];
-  searchTerm: string = '';
-  filteredData: User[] = [];
+  @ViewChild(MatPaginator) paginator?: MatPaginator;
 
-  constructor() { }
+  // El backend (UserDTO) no expone "lastLogin"; se quita esa columna del
+  // listado real (existía solo en los datos simulados).
+  displayedColumns: string[] = ['id', 'name', 'email', 'role', 'status', 'actions'];
+  dataSource: any[] = [];
+  searchTerm: string = '';
+  isLoading = true;
+  pageIndex = 0;
+  pageSize = 10;
+  totalElements = 0;
+
+  constructor(
+    private userService: UserService,
+    private snackBar: MatSnackBar
+  ) {}
 
   ngOnInit(): void {
-    // Simular datos de usuarios (reemplazar con llamada a API real)
-    this.dataSource = [
-      {
-        id: 1,
-        name: 'Juan Pérez',
-        email: 'juan.perez@example.com',
-        role: 'Administrador',
-        status: 'Activo',
-        lastLogin: '2023-06-15 10:30',
-        createdAt: '2023-01-10'
+    this.loadUsers();
+  }
+
+  loadUsers(): void {
+    this.isLoading = true;
+    this.userService.getUsers(this.pageIndex, this.pageSize).subscribe({
+      next: (response) => {
+        this.dataSource = (response?.content ?? []).map((u: any) => this.normalizeUser(u));
+        this.totalElements = response?.totalElements ?? this.dataSource.length;
+        this.isLoading = false;
       },
-      {
-        id: 2,
-        name: 'María López',
-        email: 'maria.lopez@example.com',
-        role: 'Bibliotecario',
-        status: 'Activo',
-        lastLogin: '2023-06-14 14:45',
-        createdAt: '2023-02-05'
-      },
-      {
-        id: 3,
-        name: 'Carlos Rodríguez',
-        email: 'carlos.rodriguez@example.com',
-        role: 'Usuario',
-        status: 'Inactivo',
-        lastLogin: '2023-05-20 09:15',
-        createdAt: '2023-03-12'
-      },
-      {
-        id: 4,
-        name: 'Ana Martínez',
-        email: 'ana.martinez@example.com',
-        role: 'Usuario',
-        status: 'Activo',
-        lastLogin: '2023-06-10 16:20',
-        createdAt: '2023-01-25'
-      },
-      {
-        id: 5,
-        name: 'Pedro Sánchez',
-        email: 'pedro.sanchez@example.com',
-        role: 'Bibliotecario',
-        status: 'Activo',
-        lastLogin: '2023-06-13 11:05',
-        createdAt: '2023-04-08'
+      error: () => {
+        this.dataSource = [];
+        this.isLoading = false;
+        this.snackBar.open('No se pudieron cargar los usuarios', 'Cerrar', { duration: 3000 });
       }
-    ];
-    this.filteredData = [...this.dataSource];
+    });
+  }
+
+  // El backend devuelve firstName/lastName por separado y roles como
+  // Set<String> (ej. ["ROLE_ADMIN"]); se aplanan a los campos que usa la
+  // plantilla (name, role) conservando el objeto original para las acciones.
+  private normalizeUser(user: any): any {
+    const roleNames: string[] = Array.isArray(user.roles) ? user.roles : [];
+    const primaryRole = roleNames[0]?.replace('ROLE_', '') ?? 'USER';
+    return {
+      ...user,
+      name: `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim(),
+      role: primaryRole,
+      status: user.enabled ? 'Activo' : 'Inactivo'
+    };
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadUsers();
+  }
+
+  get filteredData(): any[] {
+    const term = this.searchTerm.toLowerCase().trim();
+    if (!term) {
+      return this.dataSource;
+    }
+    return this.dataSource.filter(user =>
+      (user.name ?? '').toLowerCase().includes(term) ||
+      (user.email ?? '').toLowerCase().includes(term) ||
+      (user.role ?? '').toLowerCase().includes(term) ||
+      (user.status ?? '').toLowerCase().includes(term)
+    );
   }
 
   applyFilter(): void {
-    const searchTermLower = this.searchTerm.toLowerCase().trim();
-    this.filteredData = this.dataSource.filter(user => 
-      user.name.toLowerCase().includes(searchTermLower) ||
-      user.email.toLowerCase().includes(searchTermLower) ||
-      user.role.toLowerCase().includes(searchTermLower) ||
-      user.status.toLowerCase().includes(searchTermLower)
-    );
+    // Filtro en cliente sobre la página cargada.
   }
 
   clearSearch(): void {
     this.searchTerm = '';
-    this.filteredData = [...this.dataSource];
   }
 
   addUser(): void {
-    // Implementar lógica para abrir diálogo de creación de usuario
-    console.log('Agregar usuario');
+    this.snackBar.open('Los usuarios se registran desde la pantalla de registro pública', 'Cerrar', { duration: 4000 });
   }
 
-  editUser(user: User): void {
-    // Implementar lógica para abrir diálogo de edición de usuario
-    console.log('Editar usuario', user);
+  editUser(user: any): void {
+    // El backend solo permite editar firstName/lastName/phone (PUT /admin/users/{id})
+    // desde este flujo; no hay formulario todavía, así que se deja como pendiente
+    // explícito en vez de simular una edición que no ocurre de verdad.
+    this.snackBar.open('La edición de usuarios se implementará próximamente', 'Cerrar', { duration: 3000 });
   }
 
-  deleteUser(user: User): void {
-    // Implementar lógica para confirmar y eliminar usuario
-    console.log('Eliminar usuario', user);
+  toggleUserStatus(user: any): void {
+    const newStatus = !user.enabled;
+    this.userService.updateUserStatus(user.id, newStatus).subscribe({
+      next: () => {
+        this.snackBar.open(newStatus ? 'Usuario habilitado' : 'Usuario deshabilitado', 'Cerrar', { duration: 3000 });
+        this.loadUsers();
+      },
+      error: (err) => {
+        const message = err?.error?.message || 'No se pudo actualizar el estado del usuario';
+        this.snackBar.open(message, 'Cerrar', { duration: 3000 });
+      }
+    });
   }
 
-  viewUserDetails(user: User): void {
-    // Implementar lógica para ver detalles del usuario
-    console.log('Ver detalles del usuario', user);
+  deleteUser(user: any): void {
+    const confirmed = window.confirm(`¿Eliminar al usuario ${user.name}? Esta acción no se puede deshacer.`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.userService.deleteUser(user.id).subscribe({
+      next: () => {
+        this.snackBar.open('Usuario eliminado correctamente', 'Cerrar', { duration: 3000 });
+        this.loadUsers();
+      },
+      error: (err) => {
+        const message = err?.error?.message || 'No se pudo eliminar el usuario';
+        this.snackBar.open(message, 'Cerrar', { duration: 3000 });
+      }
+    });
+  }
+
+  viewUserDetails(user: any): void {
+    this.snackBar.open(`${user.name} · ${user.email} · Préstamos activos: ${user.activeLoansCount ?? 0} · Multas pendientes: ${user.pendingFinesCount ?? 0}`, 'Cerrar', { duration: 5000 });
   }
 
   getStatusClass(status: string): string {
-    return status === 'Activo' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 
+    return status === 'Activo' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
   }
 
   getRoleClass(role: string): string {
-    switch(role) {
-      case 'Administrador':
+    switch (role) {
+      case 'ADMIN':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
-      case 'Bibliotecario':
+      case 'LIBRARIAN':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';

@@ -16,7 +16,7 @@
         <a routerLink="/catalog" class="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium">Catálogo</a>
         <a *ngIf="isLoggedIn" routerLink="/loans" class="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium">Mis Préstamos</a>
         <a *ngIf="isLoggedIn" routerLink="/reservations" class="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium">Mis Reservas</a>
-        <a *ngIf="isLoggedIn && userRole === 'ADMIN'" routerLink="/admin" class="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium">Administración</a>
+        <a *ngIf="isLoggedIn && isStaff" routerLink="/admin" class="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium">Administración</a>
       </nav>
 
       <!-- Botones de acción -->
@@ -72,7 +72,7 @@
         <a routerLink="/catalog" class="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium">Catálogo</a>
         <a *ngIf="isLoggedIn" routerLink="/loans" class="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium">Mis Préstamos</a>
         <a *ngIf="isLoggedIn" routerLink="/reservations" class="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium">Mis Reservas</a>
-        <a *ngIf="isLoggedIn && userRole === 'ADMIN'" routerLink="/admin" class="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium">Administración</a>
+        <a *ngIf="isLoggedIn && isStaff" routerLink="/admin" class="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium">Administración</a>
         
         <ng-container *ngIf="!isLoggedIn">
           <a routerLink="/auth/login" class="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 font-medium">Iniciar sesión</a>

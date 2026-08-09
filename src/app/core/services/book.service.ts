@@ -4,34 +4,35 @@ import { Observable } from 'rxjs';
 import { Book } from '../models/book.model';
 import { environment } from '../../../environments/environment';
 
+// Los nombres de campo coinciden exactamente con BookCreateRequest.java /
+// BookUpdateRequest.java del backend. Antes esta interfaz usaba nombres
+// distintos (year, pages, location, stock, coverImage), que Jackson
+// simplemente ignora por no existir en el DTO real -> esos campos nunca
+// llegaban a guardarse aunque el formulario los enviara.
 export interface BookCreateRequest {
   title: string;
-  isbn: string;
-  year: number;
-  edition: string;
-  publisher: string;
-  language: string;
-  pages: number;
-  description: string;
-  coverImage?: string;
-  location: string;
-  stock: number;
-  authorIds: number[];
-  categoryIds: number[];
+  isbn?: string;
+  publicationYear?: number;
+  edition?: string;
+  publisher?: string;
+  language?: string;
+  physicalLocation?: string;
+  description?: string;
+  coverImageUrl?: string;
+  authorIds?: number[];
+  categoryIds?: number[];
 }
 
 export interface BookUpdateRequest {
   title?: string;
   isbn?: string;
-  year?: number;
+  publicationYear?: number;
   edition?: string;
   publisher?: string;
   language?: string;
-  pages?: number;
+  physicalLocation?: string;
   description?: string;
-  coverImage?: string;
-  location?: string;
-  stock?: number;
+  coverImageUrl?: string;
   authorIds?: number[];
   categoryIds?: number[];
 }
@@ -105,15 +106,4 @@ export class BookService {
     return this.http.get<any>(`${this.PUBLIC_API_URL}/recent`, { params });
   }
 
-  uploadBookCover(id: number, file: File): Observable<any> {
-    const formData = new FormData();
-    formData.append('file', file);
-    return this.http.post<any>(`${this.API_URL}/${id}/cover`, formData);
-  }
-
-  importBooks(file: File): Observable<any> {
-    const formData = new FormData();
-    formData.append('file', file);
-    return this.http.post<any>(`${this.API_URL}/import`, formData);
-  }
 }

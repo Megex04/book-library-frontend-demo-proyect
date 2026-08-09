@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,17 +10,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatChipsModule } from '@angular/material/chips';
-
-interface Fine {
-  id: number;
-  userName: string;
-  bookTitle: string;
-  amount: number;
-  reason: string;
-  issueDate: string;
-  dueDate: string;
-  status: string;
-}
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { FineService } from '../../../core/services/fine.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-fine-management',
@@ -43,124 +35,135 @@ interface Fine {
   styleUrls: ['./fine-management.component.scss']
 })
 export class FineManagementComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'userName', 'bookTitle', 'amount', 'reason', 'issueDate', 'status', 'actions'];
-  dataSource: Fine[] = [];
-  searchTerm: string = '';
-  filteredData: Fine[] = [];
+  @ViewChild(MatPaginator) paginator?: MatPaginator;
 
-  constructor() { }
+  displayedColumns: string[] = ['id', 'userName', 'bookTitle', 'amount', 'daysOverdue', 'status', 'actions'];
+  dataSource: any[] = [];
+  searchTerm: string = '';
+  isLoading = true;
+  pageIndex = 0;
+  pageSize = 10;
+  totalElements = 0;
+
+  constructor(
+    private fineService: FineService,
+    private authService: AuthService,
+    private snackBar: MatSnackBar
+  ) {}
+
+  // Condonar multas es hasRole('ADMIN') en el backend (FineController);
+  // cobrar (pay) sí lo permite LIBRARIAN. El botón de condonar se oculta
+  // para quien no sea ADMIN en vez de dejarlo visible y fallar con 403.
+  get isAdmin(): boolean {
+    return this.authService.hasRole('ADMIN');
+  }
 
   ngOnInit(): void {
-    // Simular datos de multas (reemplazar con llamada a API real)
-    this.dataSource = [
-      {
-        id: 1,
-        userName: 'Juan Pérez',
-        bookTitle: 'Cien años de soledad',
-        amount: 5.00,
-        reason: 'Retraso en devolución',
-        issueDate: '2023-06-01',
-        dueDate: '2023-06-15',
-        status: 'Pendiente'
+    this.loadFines();
+  }
+
+  loadFines(): void {
+    this.isLoading = true;
+    this.fineService.getAllFines(this.pageIndex, this.pageSize).subscribe({
+      next: (response) => {
+        this.dataSource = response?.content ?? [];
+        this.totalElements = response?.totalElements ?? this.dataSource.length;
+        this.isLoading = false;
       },
-      {
-        id: 2,
-        userName: 'María López',
-        bookTitle: 'El principito',
-        amount: 10.00,
-        reason: 'Daño en libro',
-        issueDate: '2023-05-20',
-        dueDate: '2023-06-03',
-        status: 'Pagada'
-      },
-      {
-        id: 3,
-        userName: 'Carlos Rodríguez',
-        bookTitle: '1984',
-        amount: 7.50,
-        reason: 'Retraso en devolución',
-        issueDate: '2023-05-15',
-        dueDate: '2023-05-29',
-        status: 'Pendiente'
-      },
-      {
-        id: 4,
-        userName: 'Ana Martínez',
-        bookTitle: 'Don Quijote de la Mancha',
-        amount: 15.00,
-        reason: 'Libro perdido',
-        issueDate: '2023-06-05',
-        dueDate: '2023-06-19',
-        status: 'Cancelada'
-      },
-      {
-        id: 5,
-        userName: 'Pedro Sánchez',
-        bookTitle: 'Harry Potter y la piedra filosofal',
-        amount: 3.50,
-        reason: 'Retraso en devolución',
-        issueDate: '2023-05-10',
-        dueDate: '2023-05-24',
-        status: 'Pagada'
+      error: () => {
+        this.dataSource = [];
+        this.isLoading = false;
+        this.snackBar.open('No se pudieron cargar las multas', 'Cerrar', { duration: 3000 });
       }
-    ];
-    this.filteredData = [...this.dataSource];
+    });
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadFines();
+  }
+
+  get filteredData(): any[] {
+    const term = this.searchTerm.toLowerCase().trim();
+    if (!term) {
+      return this.dataSource;
+    }
+    return this.dataSource.filter(fine =>
+      (fine.userName ?? '').toLowerCase().includes(term) ||
+      (fine.bookTitle ?? '').toLowerCase().includes(term) ||
+      (fine.status ?? '').toLowerCase().includes(term)
+    );
   }
 
   applyFilter(): void {
-    const searchTermLower = this.searchTerm.toLowerCase().trim();
-    this.filteredData = this.dataSource.filter(fine => 
-      fine.userName.toLowerCase().includes(searchTermLower) ||
-      fine.bookTitle.toLowerCase().includes(searchTermLower) ||
-      fine.reason.toLowerCase().includes(searchTermLower) ||
-      fine.status.toLowerCase().includes(searchTermLower)
-    );
+    // Filtro en cliente sobre la página cargada.
   }
 
   clearSearch(): void {
     this.searchTerm = '';
-    this.filteredData = [...this.dataSource];
   }
 
   addFine(): void {
-    // Implementar lógica para abrir diálogo de creación de multa
-    console.log('Agregar multa');
+    // El backend genera las multas automáticamente al procesar préstamos
+    // vencidos; no existe un endpoint para crearlas manualmente.
+    this.snackBar.open('Las multas se generan automáticamente por préstamos vencidos', 'Cerrar', { duration: 4000 });
   }
 
-  editFine(fine: Fine): void {
-    // Implementar lógica para abrir diálogo de edición de multa
-    console.log('Editar multa', fine);
+  markAsPaid(fine: any): void {
+    this.fineService.payFine(fine.id).subscribe({
+      next: () => {
+        this.snackBar.open('Multa marcada como pagada', 'Cerrar', { duration: 3000 });
+        this.loadFines();
+      },
+      error: (err) => {
+        const message = err?.error?.message || 'No se pudo registrar el pago';
+        this.snackBar.open(message, 'Cerrar', { duration: 3000 });
+      }
+    });
   }
 
-  deleteFine(fine: Fine): void {
-    // Implementar lógica para confirmar y eliminar multa
-    console.log('Eliminar multa', fine);
-  }
+  waiveFine(fine: any): void {
+    const confirmed = window.confirm(`¿Condonar la multa de ${fine.userName}? Esta acción no se puede deshacer.`);
+    if (!confirmed) {
+      return;
+    }
 
-  markAsPaid(fine: Fine): void {
-    // Implementar lógica para marcar multa como pagada
-    console.log('Marcar como pagada', fine);
-  }
-
-  cancelFine(fine: Fine): void {
-    // Implementar lógica para cancelar multa
-    console.log('Cancelar multa', fine);
+    this.fineService.waiveFine(fine.id).subscribe({
+      next: () => {
+        this.snackBar.open('Multa condonada correctamente', 'Cerrar', { duration: 3000 });
+        this.loadFines();
+      },
+      error: (err) => {
+        const message = err?.error?.message || 'No se pudo condonar la multa';
+        this.snackBar.open(message, 'Cerrar', { duration: 3000 });
+      }
+    });
   }
 
   getStatusClass(status: string): string {
-    switch(status) {
-      case 'Pendiente':
+    switch (status) {
+      case 'PENDING':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      case 'Pagada':
+      case 'PAID':
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'Cancelada':
+      case 'WAIVED':
         return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   }
 
+  getStatusText(status: string): string {
+    const statusMap: { [key: string]: string } = {
+      'PENDING': 'Pendiente',
+      'PAID': 'Pagada',
+      'WAIVED': 'Condonada'
+    };
+    return statusMap[status] || status;
+  }
+
   formatCurrency(amount: number): string {
-    return amount.toFixed(2) + ' €';
+    return (amount ?? 0).toFixed(2) + ' €';
   }
 }
