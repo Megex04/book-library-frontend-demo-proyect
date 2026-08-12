@@ -1,0 +1,87 @@
+<div class="container mx-auto p-6 max-w-2xl">
+  <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Mi Perfil</h1>
+
+  <div *ngIf="isLoading" class="flex justify-center py-12">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <div *ngIf="!isLoading && profile" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+    <div class="flex items-center gap-4 mb-6">
+      <div class="w-16 h-16 rounded-full bg-primary-500 flex items-center justify-center text-white text-2xl font-medium">
+        {{ (profile.firstName?.[0] || 'U') | uppercase }}
+      </div>
+      <div>
+        <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ profile.firstName }} {{ profile.lastName }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ profile.email }}</p>
+        <mat-chip-set class="mt-1">
+          <mat-chip>{{ getRoleNames() }}</mat-chip>
+        </mat-chip-set>
+      </div>
+    </div>
+
+    <!-- Vista de solo lectura -->
+    <div *ngIf="!isEditing">
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div>
+          <dt class="text-sm text-gray-500 dark:text-gray-400">Nombre</dt>
+          <dd class="text-gray-900 dark:text-white">{{ profile.firstName }}</dd>
+        </div>
+        <div>
+          <dt class="text-sm text-gray-500 dark:text-gray-400">Apellido</dt>
+          <dd class="text-gray-900 dark:text-white">{{ profile.lastName }}</dd>
+        </div>
+        <div>
+          <dt class="text-sm text-gray-500 dark:text-gray-400">Correo</dt>
+          <dd class="text-gray-900 dark:text-white">{{ profile.email }}</dd>
+        </div>
+        <div>
+          <dt class="text-sm text-gray-500 dark:text-gray-400">Teléfono</dt>
+          <dd class="text-gray-900 dark:text-white">{{ profile.phone || 'N/D' }}</dd>
+        </div>
+      </dl>
+
+      <button mat-raised-button color="primary" (click)="startEditing()">
+        <mat-icon class="mr-2">edit</mat-icon>
+        Editar mis datos
+      </button>
+    </div>
+
+    <!-- Formulario de edición: solo firstName/lastName/phone, que es lo que
+         acepta PUT /api/users/profile en el backend. Email y contraseña
+         tienen sus propios flujos (verificación por email, cambio de
+         contraseña) y no se editan desde aquí. -->
+    <form *ngIf="isEditing" [formGroup]="form" (ngSubmit)="save()">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <mat-form-field appearance="outline">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="firstName" required>
+          <mat-error *ngIf="form.get('firstName')?.hasError('required')">El nombre es obligatorio</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Apellido</mat-label>
+          <input matInput formControlName="lastName" required>
+          <mat-error *ngIf="form.get('lastName')?.hasError('required')">El apellido es obligatorio</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="sm:col-span-2">
+          <mat-label>Teléfono</mat-label>
+          <input matInput formControlName="phone" required>
+          <mat-error *ngIf="form.get('phone')?.hasError('required')">El teléfono es obligatorio</mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="flex gap-2">
+        <button mat-button type="button" (click)="cancelEditing()" [disabled]="isSaving">Cancelar</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="isSaving">
+          <mat-spinner *ngIf="isSaving" diameter="18" class="inline-block mr-2"></mat-spinner>
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="!isLoading && !profile" class="text-center py-8">
+    <p class="text-gray-500 dark:text-gray-400">No se pudo cargar tu perfil.</p>
+  </div>
+</div>

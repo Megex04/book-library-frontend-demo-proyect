@@ -66,9 +66,13 @@ export class UserService {
     return this.http.put<User>(`${this.API_URL}/profile`, userData);
   }
 
+  // El backend espera { enabled } en el body JSON (UserStatusUpdateRequest,
+  // validado con @Valid @RequestBody), no como query param. Antes se mandaba
+  // como query param con un body vacío {}, así que Jackson deserializaba
+  // enabled como null y @NotNull lo rechazaba con 400 "El estado es
+  // obligatorio" antes de que el valor real llegara a usarse.
   updateUserStatus(id: number, enabled: boolean): Observable<User> {
-    const params = new HttpParams().set('enabled', enabled.toString());
-    return this.http.put<User>(`${this.ADMIN_API_URL}/${id}/status`, {}, { params });
+    return this.http.put<User>(`${this.ADMIN_API_URL}/${id}/status`, { enabled });
   }
 
   updateUserRoles(id: number, roleIds: number[]): Observable<User> {

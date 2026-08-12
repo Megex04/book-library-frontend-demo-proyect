@@ -23,6 +23,12 @@ export const routes: Routes = [
         loadChildren: () => import("./catalog/catalog.routes").then(m => m.CATALOG_ROUTES),
       },
       {
+        path: 'profile',
+        canActivate: [authGuard],
+        loadComponent: () => import('./profile/components/profile/profile.component').then(c => c.ProfileComponent),
+        title: 'Mi Perfil - BiblioSystem'
+      },
+      {
         path: 'loans',
         canActivate: [authGuard],
         loadChildren: () => import('./loans/loans.routes').then(m => m.LOANS_ROUTES),

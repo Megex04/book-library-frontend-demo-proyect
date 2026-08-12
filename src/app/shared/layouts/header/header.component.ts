@@ -11,10 +11,17 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrls: ['./header.component.css']
 })
 export class HeaderComponent implements OnInit {
-  isMenuOpen = false;
+  // Antes había una sola bandera (isMenuOpen) controlando tanto el dropdown
+  // de usuario (desktop) como el menú hamburguesa (móvil): al abrir el
+  // hamburguesa en responsive, el dropdown de usuario se abría también,
+  // superpuesto. Se separan en dos estados independientes.
+  isUserMenuOpen = false;
+  isMobileMenuOpen = false;
   isDarkMode = false;
   isLoggedIn = false;
   userRole = '';
+  userDisplayName = '';
+  userInitial = 'U';
 
   constructor(
     private authService: AuthService,
@@ -37,6 +44,10 @@ export class HeaderComponent implements OnInit {
     this.isLoggedIn = this.authService.isAuthenticated();
     const user = this.authService.getCurrentUser();
     this.userRole = user?.roles?.[0]?.name?.replace('ROLE_', '') || '';
+
+    const fullName = user ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() : '';
+    this.userDisplayName = fullName || 'Usuario';
+    this.userInitial = (user?.firstName?.[0] || fullName[0] || 'U').toUpperCase();
   }
 
   // Usa authService.hasRole() (revisa TODOS los roles del usuario) en vez de
@@ -48,8 +59,18 @@ export class HeaderComponent implements OnInit {
     return this.authService.hasRole('ADMIN') || this.authService.hasRole('LIBRARIAN');
   }
 
-  toggleMenu(): void {
-    this.isMenuOpen = !this.isMenuOpen;
+  toggleUserMenu(): void {
+    this.isUserMenuOpen = !this.isUserMenuOpen;
+    this.isMobileMenuOpen = false;
+  }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+    this.isUserMenuOpen = false;
+  }
+
+  closeUserMenu(): void {
+    this.isUserMenuOpen = false;
   }
 
   toggleDarkMode(): void {

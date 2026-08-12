@@ -103,6 +103,16 @@ export class AuthService {
     }
   }
 
+  /**
+   * Vuelve a pedir el perfil del usuario actual y actualiza currentUser$.
+   * Se usa después de editar el propio perfil (ver ProfileComponent), para
+   * que el header y cualquier otro consumidor de currentUser$ reflejen el
+   * nombre/datos nuevos sin esperar a un refresh de página.
+   */
+  refreshCurrentUser(): void {
+    this.fetchAndSetCurrentUser();
+  }
+
   private fetchAndSetCurrentUser(): void {
     this.http.get<any>(`${environment.apiUrl}/users/profile`).subscribe({
       next: (profile) => {
