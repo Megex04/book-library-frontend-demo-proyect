@@ -7,6 +7,11 @@
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
+/* Elimina la línea vertical que aparece en medio de los mat-form-field (appearance="outline") */
+.mdc-notched-outline__notch {
+  border-right: none !important;
+}
+
 /* Variables para tema claro/oscuro */
 :root {
   --primary-color: #3f51b5;

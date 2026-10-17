@@ -111,7 +111,7 @@ export class AdminDashboardComponent implements OnInit {
       books: this.bookService.getAllBooks(0, 1).pipe(trackError('libros')),
       activeLoans: this.loanService.getAllLoans('ACTIVE', 0, 1).pipe(trackError('préstamos activos')),
       overdueLoans: this.loanService.getOverdueLoans(0, 1).pipe(trackError('préstamos vencidos')),
-      pendingReservations: this.reservationService.getAllReservations('PENDING').pipe(trackError('reservas pendientes')),
+      pendingReservations: this.reservationService.getAllReservations().pipe(trackError('reservas pendientes')),
       pendingFines: this.fineService.getAllFines(0, 1).pipe(trackError('multas pendientes'))
     }).subscribe(({ users, books, activeLoans, overdueLoans, pendingReservations, pendingFines }) => {
       this.stats = {
@@ -119,8 +119,11 @@ export class AdminDashboardComponent implements OnInit {
         totalBooks: books?.totalElements ?? null,
         activeLoans: activeLoans?.totalElements ?? null,
         overdueLoans: overdueLoans?.totalElements ?? null,
-        // getAllReservations devuelve un array plano, no una Page.
-        pendingReservations: Array.isArray(pendingReservations) ? pendingReservations.length : null,
+        // getAllReservations devuelve un array plano, no una Page. Una reserva sigue
+        // "en espera" mientras esté PENDING o READY (lista para retirar, aún sin entregar).
+        pendingReservations: Array.isArray(pendingReservations)
+          ? pendingReservations.filter(r => r.status === 'PENDING' || r.status === 'READY').length
+          : null,
         unpaidFines: pendingFines?.totalElements ?? null
       };
       this.isLoadingStats = false;

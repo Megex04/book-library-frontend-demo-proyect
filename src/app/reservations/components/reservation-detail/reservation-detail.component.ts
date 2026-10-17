@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ReservationService } from '../../../core/services/reservation.service';
+import { Reservation } from '../../../core/models/reservation.model';
 
 @Component({
   selector: 'app-reservation-detail',
@@ -127,7 +128,7 @@ import { ReservationService } from '../../../core/services/reservation.service';
   styles: []
 })
 export class ReservationDetailComponent implements OnInit {
-  reservation: any = null;
+  reservation: Reservation | null = null;
   reservationId: number = 0;
   isLoading = true;
   isCancelling = false;
@@ -151,7 +152,7 @@ export class ReservationDetailComponent implements OnInit {
     this.isLoading = true;
     this.reservationService.getMyReservations().subscribe({
       next: (reservations) => {
-        this.reservation = (reservations || []).find((r: any) => r.id === this.reservationId) || null;
+        this.reservation = (reservations || []).find((r) => r.id === this.reservationId) || null;
         this.isLoading = false;
       },
       error: () => {

@@ -12,6 +12,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ReservationService } from '../../../core/services/reservation.service';
+import { Reservation } from '../../../core/models/reservation.model';
 
 @Component({
   selector: 'app-reservation-management',
@@ -35,7 +36,7 @@ import { ReservationService } from '../../../core/services/reservation.service';
 })
 export class ReservationManagementComponent implements OnInit {
   displayedColumns: string[] = ['id', 'bookTitle', 'userName', 'reservationDate', 'expiryDate', 'status', 'actions'];
-  dataSource: any[] = [];
+  dataSource: Reservation[] = [];
   searchTerm: string = '';
   isLoading = true;
   statusFilter?: string;
@@ -64,7 +65,7 @@ export class ReservationManagementComponent implements OnInit {
     });
   }
 
-  get filteredData(): any[] {
+  get filteredData(): Reservation[] {
     const term = this.searchTerm.toLowerCase().trim();
     if (!term) {
       return this.dataSource;
@@ -88,7 +89,7 @@ export class ReservationManagementComponent implements OnInit {
     this.snackBar.open('Las reservas se crean desde el catálogo (los usuarios reservan sus propios libros)', 'Cerrar', { duration: 4000 });
   }
 
-  processReservation(reservation: any): void {
+  processReservation(reservation: Reservation): void {
     this.reservationService.processReservation(reservation.id).subscribe({
       next: () => {
         this.snackBar.open('Reserva marcada como lista para retirar', 'Cerrar', { duration: 3000 });
@@ -101,7 +102,7 @@ export class ReservationManagementComponent implements OnInit {
     });
   }
 
-  completeReservation(reservation: any): void {
+  completeReservation(reservation: Reservation): void {
     this.reservationService.completeReservation(reservation.id).subscribe({
       next: () => {
         this.snackBar.open('Reserva completada: préstamo creado correctamente', 'Cerrar', { duration: 3000 });
@@ -114,7 +115,7 @@ export class ReservationManagementComponent implements OnInit {
     });
   }
 
-  cancelReservation(reservation: any): void {
+  cancelReservation(reservation: Reservation): void {
     const reason = window.prompt('Motivo de la cancelación:', 'Cancelada por el bibliotecario');
     if (reason === null) {
       return;

@@ -9,6 +9,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ReservationService } from '../../../core/services/reservation.service';
+import { Reservation } from '../../../core/models/reservation.model';
 
 @Component({
   selector: 'app-reservation-list',
@@ -107,7 +108,7 @@ import { ReservationService } from '../../../core/services/reservation.service';
   `]
 })
 export class ReservationListComponent implements OnInit {
-  reservations: any[] = [];
+  reservations: Reservation[] = [];
   displayedColumns: string[] = ['book', 'status', 'date', 'expiration', 'actions'];
   isLoading = true;
 

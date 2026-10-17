@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#3f51b5"/>
+
+  <!-- Tapas -->
+  <path d="M7 19 C16 15 26 15 32 20 C38 15 48 15 57 19 V49 C48 45 38 45 32 50 C26 45 16 45 7 49 Z" fill="#283593"/>
+
+  <!-- Página izquierda -->
+  <path d="M32 20 C26 15 17 15 10 18 V46 C17 43 26 43 32 48 Z" fill="#ffffff"/>
+  <!-- Página derecha -->
+  <path d="M32 20 C38 15 47 15 54 18 V46 C47 43 38 43 32 48 Z" fill="#e8eaf6"/>
+
+  <!-- Página que se voltea de derecha a izquierda -->
+  <g transform="translate(32 0)">
+    <g>
+      <animateTransform attributeName="transform" type="scale"
+                        values="1 1; 0 1; -1 1; -1 1; 0 1; 1 1; 1 1"
+                        keyTimes="0; 0.25; 0.5; 0.6; 0.8; 1; 1"
+                        dur="2.4s" repeatCount="indefinite"/>
+      <path transform="translate(-32 0)"
+            d="M32 20 C38 15 47 15 54 18 V46 C47 43 38 43 32 48 Z"
+            fill="#ffffff" stroke="#c5cae9" stroke-width="1"/>
+    </g>
+  </g>
+
+  <!-- Lomo -->
+  <path d="M32 20 V48" stroke="#9fa8da" stroke-width="1.5"/>
+</svg>
