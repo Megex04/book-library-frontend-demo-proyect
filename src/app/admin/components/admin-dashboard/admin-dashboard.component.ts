@@ -112,12 +112,16 @@ export class AdminDashboardComponent implements OnInit {
       activeLoans: this.loanService.getAllLoans('ACTIVE', 0, 1).pipe(trackError('préstamos activos')),
       overdueLoans: this.loanService.getOverdueLoans(0, 1).pipe(trackError('préstamos vencidos')),
       pendingReservations: this.reservationService.getAllReservations().pipe(trackError('reservas pendientes')),
-      pendingFines: this.fineService.getAllFines(0, 1).pipe(trackError('multas pendientes'))
+      pendingFines: this.fineService.getAllFines(0, 1, 'createdAt,desc', 'PENDING').pipe(trackError('multas pendientes'))
     }).subscribe(({ users, books, activeLoans, overdueLoans, pendingReservations, pendingFines }) => {
       this.stats = {
         totalUsers: users?.totalElements ?? null,
         totalBooks: books?.totalElements ?? null,
-        activeLoans: activeLoans?.totalElements ?? null,
+        // El filtro ACTIVE del backend incluye los vencidos (siguen ACTIVE en BD hasta devolverse),
+        // pero /admin/loans los muestra como "Vencido": se restan para que coincidan.
+        activeLoans: activeLoans?.totalElements != null && overdueLoans?.totalElements != null
+          ? Math.max(activeLoans.totalElements - overdueLoans.totalElements, 0)
+          : (activeLoans?.totalElements ?? null),
         overdueLoans: overdueLoans?.totalElements ?? null,
         // getAllReservations devuelve un array plano, no una Page. Una reserva sigue
         // "en espera" mientras esté PENDING o READY (lista para retirar, aún sin entregar).

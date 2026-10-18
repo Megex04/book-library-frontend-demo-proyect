@@ -17,11 +17,12 @@ export class FineService {
 
   constructor(private http: HttpClient) {}
 
-  getAllFines(page = 0, size = 10, sort = 'createdAt,desc'): Observable<any> {
-    const params = new HttpParams()
+  getAllFines(page = 0, size = 10, sort = 'createdAt,desc', status?: string): Observable<any> {
+    let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
       .set('sort', sort);
+    if (status) params = params.set('status', status);
 
     return this.http.get<any>(this.ADMIN_API_URL, { params });
   }
