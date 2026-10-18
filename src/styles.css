@@ -31,3 +31,100 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   --background-color: #303030;
   --card-background: #424242;
 }
+/* ===== Modo oscuro =====
+   El tema de Material es claro; con la clase "dark" en <html> (la pone el header)
+   se redefinen sus tokens y el color base del texto, para que títulos, tarjetas,
+   tablas, formularios, menús y diálogos se vean bien sobre el fondo oscuro. */
+html.dark {
+  color-scheme: dark;
+
+  --mat-card-elevated-container-color: #1f2937;
+  --mat-card-filled-container-color: #1f2937;
+  --mat-card-outlined-container-color: #1f2937;
+  --mat-card-outlined-outline-color: rgba(255, 255, 255, 0.12);
+  --mat-card-subtitle-text-color: #9ca3af;
+
+  --mat-table-background-color: #1f2937;
+  --mat-table-header-headline-color: #e5e7eb;
+  --mat-table-row-item-label-text-color: #f3f4f6;
+  --mat-table-row-item-outline-color: rgba(255, 255, 255, 0.12);
+
+  --mat-paginator-container-background-color: #1f2937;
+  --mat-paginator-container-text-color: #e5e7eb;
+  --mat-paginator-enabled-icon-color: #9ca3af;
+  --mat-paginator-disabled-icon-color: rgba(255, 255, 255, 0.3);
+  --mat-sort-arrow-color: #e5e7eb;
+
+  --mat-form-field-outlined-input-text-color: #f3f4f6;
+  --mat-form-field-outlined-input-text-placeholder-color: #9ca3af;
+  --mat-form-field-outlined-label-text-color: #9ca3af;
+  --mat-form-field-outlined-hover-label-text-color: #e5e7eb;
+  --mat-form-field-outlined-outline-color: rgba(255, 255, 255, 0.38);
+  --mat-form-field-outlined-hover-outline-color: rgba(255, 255, 255, 0.87);
+  --mat-form-field-outlined-disabled-input-text-color: rgba(255, 255, 255, 0.38);
+  --mat-form-field-outlined-disabled-label-text-color: rgba(255, 255, 255, 0.38);
+  --mat-form-field-outlined-disabled-outline-color: rgba(255, 255, 255, 0.12);
+  --mat-form-field-filled-container-color: #374151;
+  --mat-form-field-filled-input-text-color: #f3f4f6;
+  --mat-form-field-filled-label-text-color: #9ca3af;
+  --mat-form-field-enabled-select-arrow-color: #9ca3af;
+  --mat-form-field-state-layer-color: #f3f4f6;
+
+  --mat-select-panel-background-color: #1f2937;
+  --mat-select-enabled-trigger-text-color: #f3f4f6;
+  --mat-select-enabled-arrow-color: #9ca3af;
+  --mat-select-placeholder-text-color: #9ca3af;
+  --mat-option-label-text-color: #f3f4f6;
+  --mat-option-selected-state-label-text-color: #93c5fd;
+  --mat-option-selected-state-layer-color: rgba(255, 255, 255, 0.12);
+
+  --mat-menu-container-color: #1f2937;
+  --mat-menu-item-label-text-color: #f3f4f6;
+  --mat-menu-item-icon-color: #e5e7eb;
+  --mat-menu-divider-color: rgba(255, 255, 255, 0.12);
+
+  --mat-dialog-container-color: #1f2937;
+  --mat-dialog-subhead-color: #f9fafb;
+  --mat-dialog-supporting-text-color: #d1d5db;
+
+  --mat-checkbox-label-text-color: #f3f4f6;
+  --mat-checkbox-unselected-icon-color: #9ca3af;
+  --mat-checkbox-unselected-hover-icon-color: #e5e7eb;
+  --mat-checkbox-unselected-focus-icon-color: #e5e7eb;
+
+  --mat-divider-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Color base: los títulos y textos sin color propio heredan de aquí (Tailwind preflight
+   deja h1-h6 con color: inherit). */
+.dark app-root {
+  color: #f3f4f6;
+}
+.dark .mat-mdc-card,
+.dark .mat-mdc-card-title,
+.dark .mat-mdc-card-content,
+.dark .mat-mdc-dialog-title,
+.dark .mat-mdc-tab-group {
+  color: #f3f4f6;
+}
+.dark .mat-mdc-card-subtitle {
+  color: #9ca3af;
+}
+
+/* Grises de texto pensados para fondo claro */
+.dark .text-gray-500,
+.dark .text-gray-600 {
+  color: #9ca3af;
+}
+
+/* Paneles de aviso (detalle de préstamo, reserva y multa): fondo pastel + texto oscuro */
+.dark .bg-blue-50.p-4.rounded-md   { background-color: rgba(59, 130, 246, 0.15); }
+.dark .bg-yellow-50.p-4.rounded-md { background-color: rgba(234, 179, 8, 0.15); }
+.dark .bg-red-50.p-4.rounded-md    { background-color: rgba(239, 68, 68, 0.15); }
+.dark .bg-green-50.p-4.rounded-md  { background-color: rgba(34, 197, 94, 0.15); }
+.dark .bg-gray-50.p-4.rounded-md   { background-color: rgba(156, 163, 175, 0.15); }
+.dark .bg-blue-50 .text-blue-800     { color: #93c5fd; }
+.dark .bg-yellow-50 .text-yellow-800 { color: #fde68a; }
+.dark .bg-red-50 .text-red-800       { color: #fca5a5; }
+.dark .bg-green-50 .text-green-800   { color: #86efac; }
+.dark .bg-gray-50 .text-gray-800     { color: #e5e7eb; }
